@@ -2,10 +2,25 @@
 
 base_url='http://codespeed.dak8s.net:8000/timeline'
 
-records_count=200 # history size to request and analyze
-records_count_trend=10 # number of records to consider as median_trend, i.e. ignore regression if it lasts less # todo: use several grades?
-median_trend_threshold=-2 # change threshold of trend median, percent
-dev_ratio_threshold=6 # threshold for ratio of last deviation to MAD # todo: use percentile
+records_count=$1 # history size to request and analyze
+if [ -z "$records_count" ]; then
+    records_count=200
+fi
+records_count_in_link=200 # not all values work
+
+records_count_trend=$2 # number of records to consider as median_trend, i.e. ignore regression if it lasts less # todo: use several grades?
+if [ -z "$records_count_trend" ]; then
+    records_count_trend=10
+fi
+
+median_trend_threshold=$3 # change threshold of trend median, percent
+if [ -z "$median_trend_threshold" ]; then
+    median_trend_threshold=-2
+fi
+dev_ratio_threshold=$4 # threshold for ratio of last deviation to MAD # todo: use percentile
+if [ -z "$dev_ratio_threshold" ]; then
+    dev_ratio_threshold=6
+fi
 
 function load_data () {
     local benchmark="$1"
@@ -69,8 +84,8 @@ function check_deviation () {
     fi
 
     if [ "$median_trend" -lt "$median_trend_threshold" ] || ( [ "$last_value" -lt "$median" ] && [ "$last_dev_ratio" -gt "$dev_ratio_threshold" ] ); then
-        echo -e "<$base_url/#/?exe=1,3&ben=$benchmark&env=2&revs=$records_count&equid=off&quarts=on&extr=on|$benchmark>:\n \
-    median=$median, last=$last_value, dev=$last_dev_abs, median of last $records_count_trend=$trend_median, trend change: $median_trend,\n \
+        echo -e "<$base_url/#/?exe=1,3&ben=$benchmark&env=2&revs=$records_count_in_link&equid=off&quarts=on&extr=on|$benchmark>:\n \
+    median=$median (last $records_count), last=$last_value, dev=$last_dev_abs, median of last $records_count_trend=$trend_median, trend change: $median_trend%,\n \
     median dev=$median_dev, ratio=$last_dev_ratio, threshold=$dev_ratio_threshold"
     fi
 }
