@@ -35,7 +35,12 @@ timestamps {
                 }
                 stage('Checking out flink') {
                     dir('flink') {
-                        git url: '${github_flink_url}', branch: '${github_flink_branch}'
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: '${github_flink_branch}']],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'CheckoutOption']],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[url: '${github_flink_url}']]])
                     }
                 }
                 stage('Building flink') {
